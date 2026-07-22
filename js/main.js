@@ -47858,7 +47858,7 @@ ${e2}`);
     wish5.position.set(b5.x, b5.y);
     x3.position.set(bx.x, bx.y);
     skip.position.set(bs.x, bs.y);
-    skip.setOn(true);
+    skip.setOn(false);
     root.addChild(wish1, wish5, x3, skip);
     const MSG_DEFAULT = "\u8A31\u9858 1 \u6B21 = 10 \u91D1\u5E63";
     const msgRect = skin.rect("hud.msg", { x: 360, y: 1112, w: 0, h: 0 });
