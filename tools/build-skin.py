@@ -19,7 +19,7 @@ a = np.asarray(im).astype(np.uint8)
 FRAME = (38, 613, 1400, 1966)        # 盤面外框
 CARD = (252, 829, 1178, 1745)        # 中央紅卡
 RIBBON = (252, 826, 1178, 972)       # 卡片頂端「財神樂透」緞帶
-MASCOT = (294, 1000, 690, 1490)      # 財神內嵌面板
+MASCOT = (266, 963, 703, 1500)       # 財神內嵌面板（右邊界要含元寶溢出的部分，切在賠率表文字左緣之前）
 TITLE_BAND = (0, 0, AW, 282)         # 頂端標題美術字（含蝙蝠）
 BOTTOM_BAND = (0, 2570, AW, AH)      # 金幣堆 + 底部狀態列
 BAR_TOP = 2758                       # 底部狀態列上緣
@@ -131,8 +131,12 @@ def build_board_frame():
 
     # 中央紅卡內部清空（緞帶／財神／賠率表／獎池數字都由 sprite 或程式畫）
     cx0, cy0, cx1, cy1 = 286, 975, 1146, 1715
-    col = np.median(a[cy0:cy1, 258:292].astype(float), axis=1)   # 卡片左側乾淨帶
-    col = _smooth(col, 18)
+    # 取樣列：財神面板右側的乾淨窄帶（上半）＋ 滾輪左側的卡片底（下半）
+    col = np.concatenate([
+        np.median(a[cy0:1520, 692:703].astype(float), axis=1),
+        np.median(a[1520:cy1, 300:392].astype(float), axis=1),
+    ])
+    col = _smooth(col, 22)
     for y in range(cy0, cy1):
         fr[y - oy, cx0 - ox:cx1 - ox] = col[y - cy0].astype(np.uint8)
 
@@ -156,7 +160,7 @@ def art_to_design(box):
 def build_pieces():
     for name, box, radius in (
         ("deco-title", RIBBON, 10),
-        ("deco-mascot", MASCOT, 26),
+        ("deco-mascot", MASCOT, 15),
     ):
         d = art_to_design(box)
         piece = im.crop(box).resize((d[2] * 2, d[3] * 2), Image.LANCZOS)
