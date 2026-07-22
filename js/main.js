@@ -47726,24 +47726,35 @@ ${e2}`);
     }
     const playerRect = skin.rect("hud.player", { x: 20, y: 44, w: 120, h: 30 });
     const playerText = new Text({
-      text: isMock ? "MOCK" : isLaunchMode ? `${qAccount}@${qChannel}` : `ID:${playerId}`,
-      style: textStyle(skin.font("marquee", { size: 22 }))
+      text: isMock ? qs.get("player") ?? "1002734" : isLaunchMode ? `${qAccount}@${qChannel}` : `ID:${playerId}`,
+      style: textStyle(bgTex ? skin.font("playerId", { size: 27 }) : skin.font("marquee", { size: 22 }))
     });
-    playerText.position.set(playerRect.x, playerRect.y);
+    if (bgTex) {
+      playerText.anchor.set(0.5);
+      playerText.position.set(playerRect.x + (playerRect.w ?? 0) / 2, playerRect.y + (playerRect.h ?? 0) / 2);
+    } else {
+      playerText.position.set(playerRect.x, playerRect.y);
+    }
     root.addChild(playerText);
     const balRect = skin.rect("hud.balance", { x: 150, y: 50, w: 420, h: 66 });
     const balPlaque = new Container();
     balPlaque.position.set(balRect.x, balRect.y);
-    balPlaque.addChild(new Graphics().roundRect(0, 0, balRect.w, balRect.h, 14).fill(vGrad(16771496, 12092939)).stroke({ width: 2, color: 8017416 }));
-    const balLab = new Text({ text: "\u9918\u984D", style: textStyle(skin.font("button", { size: 24, color: "#5a2a05" }), { letterSpacing: 4, fill: "#5a2a05" }) });
-    balLab.anchor.set(0, 0.5);
-    balLab.position.set(18, balRect.h / 2);
-    const balCoin = new Graphics().circle(0, 0, 15).fill(vGrad(16774088, 12092939)).stroke({ width: 2, color: 9069584 });
-    balCoin.position.set(105, balRect.h / 2);
-    const balanceText = new Text({ text: "\u2014", style: textStyle(skin.font("balance", { size: 32, color: "#3a1c05" })) });
-    balanceText.anchor.set(0, 0.5);
-    balanceText.position.set(130, balRect.h / 2);
-    balPlaque.addChild(balLab, balCoin, balanceText);
+    const balanceText = new Text({ text: "\u2014", style: textStyle(bgTex ? skin.font("balanceBar", { size: 29 }) : skin.font("balance", { size: 32, color: "#3a1c05" })) });
+    if (bgTex) {
+      balanceText.anchor.set(1, 0.5);
+      balanceText.position.set(balRect.w - 10, balRect.h / 2);
+      balPlaque.addChild(balanceText);
+    } else {
+      balPlaque.addChild(new Graphics().roundRect(0, 0, balRect.w, balRect.h, 14).fill(vGrad(16771496, 12092939)).stroke({ width: 2, color: 8017416 }));
+      const balLab = new Text({ text: "\u9918\u984D", style: textStyle(skin.font("button", { size: 24, color: "#5a2a05" }), { letterSpacing: 4, fill: "#5a2a05" }) });
+      balLab.anchor.set(0, 0.5);
+      balLab.position.set(18, balRect.h / 2);
+      const balCoin = new Graphics().circle(0, 0, 15).fill(vGrad(16774088, 12092939)).stroke({ width: 2, color: 9069584 });
+      balCoin.position.set(105, balRect.h / 2);
+      balanceText.anchor.set(0, 0.5);
+      balanceText.position.set(130, balRect.h / 2);
+      balPlaque.addChild(balLab, balCoin, balanceText);
+    }
     root.addChild(balPlaque);
     const menuRect = skin.rect("ui.menu", { x: 636, y: 48, w: 60, h: 60 });
     const menuBtn = new Container();
@@ -47814,6 +47825,11 @@ ${e2}`);
     });
     prize.position.set(prizeRect.x, prizeRect.y);
     root.addChild(prize);
+    const blessRect = skin.rect("deco.bless", { x: 352, y: 501, w: 228, h: 38 });
+    const bless = new Text({ text: "祝您發大財", style: textStyle(skin.font("bless", { size: 27 }), { letterSpacing: 2 }) });
+    bless.anchor.set(0.5, 0);
+    bless.position.set(blessRect.x + blessRect.w / 2, blessRect.y);
+    root.addChild(bless);
     const capRect = skin.rect("pool.cap", { x: 356, y: 548, w: 224, h: 90 });
     const capBox = new Container();
     const capLab = new Text({ text: "\u7A4D\u6EFF\u4E0A\u9650\u70BA", style: textStyle(skin.font("marquee", { size: 14, color: "#fff2cf" })) });

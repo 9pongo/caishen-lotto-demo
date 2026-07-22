@@ -2,28 +2,29 @@
   "designW": 720,
   "designH": 1280,
   "elements": {
-    "hud.player":     { "x": 20,  "y": 44,   "anchor": "left" },
-    "hud.balance":    { "x": 150, "y": 50,   "w": 420, "h": 66 },
-    "ui.menu":        { "x": 636, "y": 48,   "w": 60,  "h": 60 },
-    "hud.marquee":    { "x": 24,  "y": 140,  "w": 672, "h": 42 },
+    "hud.player":     { "x": 13,  "y": 1177, "w": 276, "h": 50, "anchor": "center" },
+    "hud.balance":    { "x": 13,  "y": 1228, "w": 276, "h": 45 },
+    "ui.menu":        { "x": 646, "y": 139,  "w": 48,  "h": 44 },
+    "hud.marquee":    { "x": 24,  "y": 140,  "w": 604, "h": 42 },
 
     "board.frame":    { "x": 24,  "y": 205,  "w": 672, "h": 672 },
     "board.inset":    20,
     "board.cellSize": 86,
     "board.cellGap":  5,
 
-    "deco.title":      { "x": 135, "y": 316, "w": 450, "h": 64 },
-    "deco.mascot":     { "x": 150, "y": 388, "w": 190, "h": 190 },
-    "deco.prizeTable": { "x": 356, "y": 392, "w": 224, "h": 150 },
-    "pool.cap":        { "x": 356, "y": 548, "w": 224, "h": 90 },
-    "pool.digits":     { "x": 198, "y": 646, "w": 324, "h": 104, "digitW": 50, "digitH": 74, "count": 6, "label": "目前累積", "meaning": "目前累積獎金 (非上限)；上限 50 萬故最多 6 位數" },
+    "deco.title":      { "x": 130, "y": 311, "w": 457, "h": 73 },
+    "deco.mascot":     { "x": 150, "y": 397, "w": 195, "h": 243 },
+    "deco.prizeTable": { "x": 352, "y": 394, "w": 228, "h": 150 },
+    "deco.bless":      { "x": 352, "y": 501, "w": 228, "h": 38 },
+    "pool.cap":        { "x": 352, "y": 541, "w": 228, "h": 90 },
+    "pool.digits":     { "x": 147, "y": 640, "w": 356, "h": 100, "digitW": 55, "digitH": 79, "count": 6, "label": "目前累積", "meaning": "目前累積獎金 (非上限)；上限 50 萬故最多 6 位數" },
 
-    "btn.wish1":      { "x": 40,  "y": 1000, "w": 200, "h": 96 },
-    "btn.wish5":      { "x": 260, "y": 1000, "w": 200, "h": 96 },
-    "toggle.x3":      { "x": 480, "y": 1000, "w": 100, "h": 96 },
-    "toggle.skip":    { "x": 590, "y": 1000, "w": 100, "h": 96 },
-    "hud.msg":        { "x": 360, "y": 1112, "anchor": "center" },
-    "deco.ingots":    { "x": 0,   "y": 1170, "w": 720, "h": 110 },
+    "btn.wish1":      { "x": 40,  "y": 950,  "w": 200, "h": 96 },
+    "btn.wish5":      { "x": 260, "y": 950,  "w": 200, "h": 96 },
+    "toggle.x3":      { "x": 480, "y": 950,  "w": 100, "h": 96 },
+    "toggle.skip":    { "x": 590, "y": 950,  "w": 100, "h": 96 },
+    "hud.msg":        { "x": 360, "y": 1062, "anchor": "center" },
+    "deco.ingots":    { "x": 0,   "y": 1077, "w": 720, "h": 94 },
 
     "popup.win":      { "x": 210, "y": 560, "w": 300, "anchor": "center" },
     "overlay.result": { "x": 0, "y": 0, "w": 720, "h": 1280 },
@@ -32,10 +33,11 @@
   "_notes": {
     "boardRing": "24 格 = board.frame + inset + cellSize + cellGap 推導 (7x7 外圈)。內部原點 (44,225)，step=91；cellSize*7+cellGap*6=632=frame.w-2*inset。",
     "corners": "TE=左上, YI=右上(壹), ER=右下(貳), SAN=左下(叁)。",
-    "center": "deco.title/deco.mascot/deco.prizeTable/pool.cap/pool.digits 皆落在盤面中央 5x5 內圈區 (x135..585, y316..766)。",
+    "center": "deco.title/deco.mascot/deco.prizeTable/deco.bless/pool.cap/pool.digits 皆落在盤面中央 5x5 內圈區 (x130..586, y312..765)；座標由美術稿 1438x2976 換算而來。",
     "poolCap": "pool.cap.big = 上限 50 萬 (固定文字)；pool.digits = 目前累積獎金 (6 位滾動)，達 50 萬溢出不增。",
-    "controls": "操作列沿用 v1 排列：許願1(200) / 許願5(200) / ×3(100) / 跳過(100) 同一排 y=1000；預設 跳過=ON、×3=OFF。",
-    "newIds": "新增 (建議加入 SKIN_SPEC §2)：hud.marquee, ui.menu, deco.title, deco.mascot, deco.prizeTable, deco.ingots, pool.cap, overlay.result。",
-    "safeArea": "上 90 / 下 120 不放可點元件；許願鈕 1000..1096 在安全區內。"
+    "controls": "操作列 y=950（比 v1.1 上移 50）：許願1(200) / 許願5(200) / ×3(100) / 跳過(100)；預設 跳過=ON、×3=OFF。上移是為了讓出底部金幣堆 (1077) 與狀態列 (1171)。",
+    "statusbar": "底部狀態列 (y1171..1280) 是 skin/bg.png 的美術。hud.player = 帳號 ID（上），hud.balance = 餘額（下），兩者都落在左下角那塊牌子裡。狀態列右側四顆功能鍵目前只是底圖，尚未接功能。",
+    "newIds": "新增 (建議加入 SKIN_SPEC §2)：hud.marquee, ui.menu, deco.title, deco.mascot, deco.prizeTable, deco.bless, deco.ingots, pool.cap, overlay.result。",
+    "safeArea": "上 90 / 下 120 不放可點元件；許願鈕 950..1046 在安全區內。"
   }
 }
