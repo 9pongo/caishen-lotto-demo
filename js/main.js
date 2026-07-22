@@ -46873,7 +46873,7 @@ ${e2}`);
       const isCorner = cell.coins === null;
       const isZero = cell.coins === 0;
       const pngId = isCorner ? `cell.corner.${cell.id}` : isZero ? "cell.zero" : "cell.value";
-      const tex = skin.texture(pngId);
+      const tex = isCorner || isZero ? skin.texture(pngId) : skin.texture(`cell.value.${valueIndex % 3}`) ?? skin.texture("cell.value");
       if (tex) {
         const sp = new Sprite(tex);
         sp.width = size;
@@ -46884,24 +46884,26 @@ ${e2}`);
         const bg = new Graphics().roundRect(0, 0, size, size, radius).fill(vGrad(shade(base, 1.25), shade(base, 0.82))).stroke({ width: 2, color: isCorner ? skin.color("gold", 16106818) : 16777215, alpha: isCorner ? 1 : 0.35 });
         this.addChild(bg);
       }
-      if (isCorner) {
-        const t2 = new Text({ text: cell.special, style: textStyle(skin.font("cornerTitle", { size: 30 })) });
-        t2.anchor.set(0.5);
-        t2.position.set(size / 2, size / 2);
-        this.addChild(t2);
-      } else if (isZero) {
-        const t2 = new Text({
-          text: "\u518D\u63A5\n\u518D\u53B2",
-          style: textStyle(skin.font("cellZero", { size: 16 }), { align: "center", lineHeight: 19 })
-        });
-        t2.anchor.set(0.5);
-        t2.position.set(size / 2, size / 2);
-        this.addChild(t2);
-      } else {
-        const t2 = new Text({ text: `$${cell.coins}`, style: textStyle(skin.font("cellValue", { size: 30 })) });
-        t2.anchor.set(0.5);
-        t2.position.set(size / 2, size / 2);
-        this.addChild(t2);
+      if (!skin.isTextBaked(pngId)) {
+        if (isCorner) {
+          const t2 = new Text({ text: cell.special, style: textStyle(skin.font("cornerTitle", { size: 30 })) });
+          t2.anchor.set(0.5);
+          t2.position.set(size / 2, size / 2);
+          this.addChild(t2);
+        } else if (isZero) {
+          const t2 = new Text({
+            text: "\u518D\u63A5\n\u518D\u53B2",
+            style: textStyle(skin.font("cellZero", { size: 16 }), { align: "center", lineHeight: 19 })
+          });
+          t2.anchor.set(0.5);
+          t2.position.set(size / 2, size / 2);
+          this.addChild(t2);
+        } else {
+          const t2 = new Text({ text: `$${cell.coins}`, style: textStyle(skin.font("cellValue", { size: 30 })) });
+          t2.anchor.set(0.5);
+          t2.position.set(size / 2, size / 2);
+          this.addChild(t2);
+        }
       }
       this.hi.roundRect(-2, -2, size + 4, size + 4, radius + 2).stroke({ width: 4, color: 16774848 }).roundRect(2, 2, size - 4, size - 4, radius - 2).fill({ color: 16773300, alpha: 0.28 });
       this.hi.visible = false;
@@ -47028,6 +47030,9 @@ ${e2}`);
   };
   var UiButton = class extends Container {
     bg = new Graphics();
+    sprite = null;
+    texOn = null;
+    texOff = null;
     stText = null;
     opts;
     skin;
@@ -47039,14 +47044,20 @@ ${e2}`);
       this.skin = skin;
       this.opts = opts;
       this.addChild(this.bg);
-      const tex = opts.pngId ? skin.texture(opts.pngId) : null;
-      if (tex) {
-        const sp = new Sprite(tex);
-        sp.width = opts.w;
-        sp.height = opts.h;
-        this.addChildAt(sp, 0);
+      if (opts.pngId) {
+        const base = skin.texture(opts.pngId);
+        this.texOn = skin.texture(`${opts.pngId}.on`) ?? base;
+        this.texOff = skin.texture(`${opts.pngId}.off`) ?? base;
+        const initial = opts.toggle ? this.texOff : base;
+        if (initial) {
+          this.sprite = new Sprite(initial);
+          this.sprite.width = opts.w;
+          this.sprite.height = opts.h;
+          this.addChild(this.sprite);
+        }
       }
       const isToggle = !!opts.toggle;
+      const baked = !!opts.pngId && skin.isTextBaked(opts.pngId);
       const f2 = skin.font("button", { size: isToggle ? 26 : 30, color: isToggle ? "#9a8570" : "#5a1a05" });
       const label = new Text({
         text: opts.label,
@@ -47054,6 +47065,7 @@ ${e2}`);
       });
       label.anchor.set(0.5);
       label.position.set(opts.w / 2, isToggle ? opts.h / 2 - 10 : opts.h / 2);
+      label.visible = !baked;
       this.addChild(label);
       this.labelText = label;
       if (isToggle) {
@@ -47063,6 +47075,7 @@ ${e2}`);
         });
         this.stText.anchor.set(0.5);
         this.stText.position.set(opts.w / 2, opts.h / 2 + 18);
+        this.stText.visible = !baked;
         this.addChild(this.stText);
       }
       this.eventMode = "static";
@@ -47091,6 +47104,18 @@ ${e2}`);
       const { w: w2, h: h2, toggle } = this.opts;
       const gold = this.skin.color("gold", 16106818);
       this.bg.clear();
+      if (this.sprite) {
+        if (toggle) {
+          const tex = this._on ? this.texOn : this.texOff;
+          if (tex) this.sprite.texture = tex;
+          this.labelText.style.fill = this._on ? gold : 10126704;
+          if (this.stText) {
+            this.stText.text = this._on ? "ON" : "OFF";
+            this.stText.style.fill = this._on ? gold : 10126704;
+          }
+        }
+        return;
+      }
       if (!toggle) {
         this.bg.roundRect(0, 6, w2, h2, 18).fill(8017416);
         this.bg.roundRect(0, 0, w2, h2, 18).fill(vGrad(15780170, 13145124)).stroke({ width: 3, color: 16771496 });
@@ -47115,8 +47140,15 @@ ${e2}`);
       const r2 = skin.rect("hud.marquee", { x: 24, y: 140, w: 672, h: 42 });
       this.position.set(r2.x, r2.y);
       this.w = r2.w;
-      const bg = new Graphics().roundRect(0, 0, r2.w, r2.h, 10).fill(vGrad(5900810, 3802630)).stroke({ width: 1, color: 13015610 });
-      this.addChild(bg);
+      const barTex = skin.texture("hud.marquee");
+      if (barTex) {
+        const sp = new Sprite(barTex);
+        sp.width = r2.w;
+        sp.height = r2.h;
+        this.addChild(sp);
+      } else {
+        this.addChild(new Graphics().roundRect(0, 0, r2.w, r2.h, 10).fill(vGrad(5900810, 3802630)).stroke({ width: 1, color: 13015610 }));
+      }
       this.track = new Text({ text, style: textStyle(skin.font("marquee", { size: 22 })) });
       this.track.anchor.set(0, 0.5);
       this.track.position.set(16, r2.h / 2);
@@ -47468,25 +47500,26 @@ ${e2}`);
     designW: 720,
     designH: 1280,
     elements: {
-      "hud.player": { x: 20, y: 44, anchor: "left" },
-      "hud.balance": { x: 150, y: 50, w: 420, h: 66 },
-      "ui.menu": { x: 636, y: 48, w: 60, h: 60 },
-      "hud.marquee": { x: 24, y: 140, w: 672, h: 42 },
+      "hud.player": { x: 13, y: 1177, w: 276, h: 50, anchor: "center" },
+      "hud.balance": { x: 13, y: 1228, w: 276, h: 45 },
+      "ui.menu": { x: 646, y: 139, w: 48, h: 44 },
+      "hud.marquee": { x: 24, y: 140, w: 604, h: 42 },
       "board.frame": { x: 24, y: 205, w: 672, h: 672 },
       "board.inset": 20,
       "board.cellSize": 86,
       "board.cellGap": 5,
-      "deco.title": { x: 135, y: 316, w: 450, h: 64 },
-      "deco.mascot": { x: 150, y: 388, w: 190, h: 190 },
-      "deco.prizeTable": { x: 356, y: 392, w: 224, h: 150 },
-      "pool.cap": { x: 356, y: 548, w: 224, h: 90 },
-      "pool.digits": { x: 198, y: 646, w: 324, h: 104, digitW: 50, digitH: 74, count: 6, label: "\u76EE\u524D\u7D2F\u7A4D", meaning: "\u76EE\u524D\u7D2F\u7A4D\u734E\u91D1 (\u975E\u4E0A\u9650)\uFF1B\u4E0A\u9650 50 \u842C\u6545\u6700\u591A 6 \u4F4D\u6578" },
-      "btn.wish1": { x: 40, y: 1e3, w: 200, h: 96 },
-      "btn.wish5": { x: 260, y: 1e3, w: 200, h: 96 },
-      "toggle.x3": { x: 480, y: 1e3, w: 100, h: 96 },
-      "toggle.skip": { x: 590, y: 1e3, w: 100, h: 96 },
-      "hud.msg": { x: 360, y: 1112, anchor: "center" },
-      "deco.ingots": { x: 0, y: 1170, w: 720, h: 110 },
+      "deco.title": { x: 130, y: 311, w: 457, h: 73 },
+      "deco.mascot": { x: 136, y: 379, w: 216, h: 267 },
+      "deco.prizeTable": { x: 352, y: 394, w: 228, h: 150 },
+      "deco.bless": { x: 352, y: 501, w: 228, h: 38 },
+      "pool.cap": { x: 352, y: 541, w: 228, h: 90 },
+      "pool.digits": { x: 201, y: 646, w: 319, h: 104, digitW: 49, digitH: 79, count: 6, label: "\u76EE\u524D\u7D2F\u7A4D", meaning: "\u76EE\u524D\u7D2F\u7A4D\u734E\u91D1 (\u975E\u4E0A\u9650)\uFF1B\u4E0A\u9650 50 \u842C\u6545\u6700\u591A 6 \u4F4D\u6578" },
+      "btn.wish1": { x: 40, y: 950, w: 200, h: 96 },
+      "btn.wish5": { x: 260, y: 950, w: 200, h: 96 },
+      "toggle.x3": { x: 480, y: 950, w: 100, h: 96 },
+      "toggle.skip": { x: 590, y: 950, w: 100, h: 96 },
+      "hud.msg": { x: 360, y: 1062, anchor: "center" },
+      "deco.ingots": { x: 0, y: 1077, w: 720, h: 94 },
       "popup.win": { x: 210, y: 560, w: 300, anchor: "center" },
       "overlay.result": { x: 0, y: 0, w: 720, h: 1280 },
       "overlay.jackpot.rays": { x: 360, y: 640, anchor: "center" }
@@ -47494,11 +47527,12 @@ ${e2}`);
     _notes: {
       boardRing: "24 \u683C = board.frame + inset + cellSize + cellGap \u63A8\u5C0E (7x7 \u5916\u5708)\u3002\u5167\u90E8\u539F\u9EDE (44,225)\uFF0Cstep=91\uFF1BcellSize*7+cellGap*6=632=frame.w-2*inset\u3002",
       corners: "TE=\u5DE6\u4E0A, YI=\u53F3\u4E0A(\u58F9), ER=\u53F3\u4E0B(\u8CB3), SAN=\u5DE6\u4E0B(\u53C1)\u3002",
-      center: "deco.title/deco.mascot/deco.prizeTable/pool.cap/pool.digits \u7686\u843D\u5728\u76E4\u9762\u4E2D\u592E 5x5 \u5167\u5708\u5340 (x135..585, y316..766)\u3002",
+      center: "deco.title/deco.mascot/deco.prizeTable/deco.bless/pool.cap/pool.digits \u7686\u843D\u5728\u76E4\u9762\u4E2D\u592E 5x5 \u5167\u5708\u5340 (x130..586, y312..765)\uFF1B\u5EA7\u6A19\u7531\u7F8E\u8853\u7A3F 1438x2976 \u63DB\u7B97\u800C\u4F86\u3002",
       poolCap: "pool.cap.big = \u4E0A\u9650 50 \u842C (\u56FA\u5B9A\u6587\u5B57)\uFF1Bpool.digits = \u76EE\u524D\u7D2F\u7A4D\u734E\u91D1 (6 \u4F4D\u6EFE\u52D5)\uFF0C\u9054 50 \u842C\u6EA2\u51FA\u4E0D\u589E\u3002",
-      controls: "\u64CD\u4F5C\u5217\u6CBF\u7528 v1 \u6392\u5217\uFF1A\u8A31\u98581(200) / \u8A31\u98585(200) / \xD73(100) / \u8DF3\u904E(100) \u540C\u4E00\u6392 y=1000\uFF1B\u9810\u8A2D \u8DF3\u904E=ON\u3001\xD73=OFF\u3002",
-      newIds: "\u65B0\u589E (\u5EFA\u8B70\u52A0\u5165 SKIN_SPEC \xA72)\uFF1Ahud.marquee, ui.menu, deco.title, deco.mascot, deco.prizeTable, deco.ingots, pool.cap, overlay.result\u3002",
-      safeArea: "\u4E0A 90 / \u4E0B 120 \u4E0D\u653E\u53EF\u9EDE\u5143\u4EF6\uFF1B\u8A31\u9858\u9215 1000..1096 \u5728\u5B89\u5168\u5340\u5167\u3002"
+      controls: "\u64CD\u4F5C\u5217 y=950\uFF08\u6BD4 v1.1 \u4E0A\u79FB 50\uFF09\uFF1A\u8A31\u98581(200) / \u8A31\u98585(200) / \xD73(100) / \u8DF3\u904E(100)\uFF1B\u9810\u8A2D \u8DF3\u904E=OFF\u3001\xD73=OFF\uFF08\u9810\u8A2D\u6703\u5B8C\u6574\u64AD\u8DD1\u71C8\u6F14\u51FA\uFF09\u3002\u4E0A\u79FB\u662F\u70BA\u4E86\u8B93\u51FA\u5E95\u90E8\u91D1\u5E63\u5806 (1077) \u8207\u72C0\u614B\u5217 (1171)\u3002",
+      statusbar: "\u5E95\u90E8\u72C0\u614B\u5217 (y1171..1280) \u662F skin/bg.png \u7684\u7F8E\u8853\u3002hud.player = \u5E33\u865F ID\uFF08\u4E0A\uFF09\uFF0Chud.balance = \u9918\u984D\uFF08\u4E0B\uFF09\uFF0C\u5169\u8005\u90FD\u843D\u5728\u5DE6\u4E0B\u89D2\u90A3\u584A\u724C\u5B50\u88E1\u3002\u72C0\u614B\u5217\u53F3\u5074\u56DB\u9846\u529F\u80FD\u9375\u76EE\u524D\u53EA\u662F\u5E95\u5716\uFF0C\u5C1A\u672A\u63A5\u529F\u80FD\u3002",
+      newIds: "\u65B0\u589E (\u5EFA\u8B70\u52A0\u5165 SKIN_SPEC \xA72)\uFF1Ahud.marquee, ui.menu, deco.title, deco.mascot, deco.prizeTable, deco.bless, deco.ingots, pool.cap, overlay.result\u3002",
+      safeArea: "\u4E0A 90 / \u4E0B 120 \u4E0D\u653E\u53EF\u9EDE\u5143\u4EF6\uFF1B\u8A31\u9858\u9215 950..1046 \u5728\u5B89\u5168\u5340\u5167\u3002"
     }
   };
 
@@ -47515,19 +47549,21 @@ ${e2}`);
       text: "#fff6e0",
       cream: "#fff2cf",
       cornerBlue: "#2f6fd0",
-      cellPurple: "#8e5fc8",
+      cornerGreen: "#61905a",
+      cellPurple: "#955cbf",
+      cellGreen: "#6e9d6c",
       cellTan: "#ce9f4e",
-      cellOrange: "#e0782e",
-      zeroBg: "#4a3468",
+      cellOrange: "#c57032",
+      zeroBg: "#533260",
       capRed: "#e02020",
       win: "#2ecc71",
       checkGreen: "#35c15a"
     },
     cellPalette: {
-      value: ["cellPurple", "cellTan", "cellOrange"],
+      value: ["cellPurple", "cellGreen", "cellOrange"],
       zero: "zeroBg",
-      corner: "cornerBlue",
-      _note: "\u503C\u683C\u4E09\u8272\u5FAA\u74B0\uFF1B\u89D2\u683C\u85CD\u5E95\u91D1\u6846\uFF1Bzero \u7D2B\u5E95\u3002\u6587\u5B57\u4E00\u5F8B\u767D/\u91D1\u3002"
+      corner: "cornerGreen",
+      _note: "\u503C\u683C\u4E09\u8272\u5FAA\u74B0\uFF08\u7D2B/\u7DA0/\u6A58\uFF0C\u53D6\u81EA\u7F8E\u8853\u7A3F\uFF09\uFF1B\u89D2\u683C\u7389\u7DA0\u5E95\u91D1\u6846\uFF1Bzero \u6DF1\u7D2B\u5E95\u3002\u6587\u5B57\u4E00\u5F8B\u767D/\u91D1\u3002"
     },
     gradients: {
       stageBg: "radial-gradient(130% 80% at 50% 0%, #8a1414 0%, #6e0d0d 45%, #4a0808 100%)",
@@ -47542,6 +47578,9 @@ ${e2}`);
       ui: '"Noto Sans TC", sans-serif',
       poolDigits: { family: '"Oswald", sans-serif', size: 52, fontWeight: 700, color: "#2a1206", cellBg: "#fff7e6" },
       balance: { family: '"Oswald", sans-serif', size: 32, fontWeight: 700, color: "#3a1c05" },
+      playerId: { family: '"Oswald", sans-serif', size: 27, fontWeight: 700, color: "#f7f7f7" },
+      balanceBar: { family: '"Oswald", sans-serif', size: 29, fontWeight: 700, color: "#fff6e0" },
+      bless: { family: '"Noto Sans TC", sans-serif', size: 27, fontWeight: 900, color: "#ffdf3a", glow: "#c0201a" },
       title: { family: '"Noto Sans TC", sans-serif', size: 38, fontWeight: 900, color: "#f5c542", letterSpacing: 6, glow: "#f5c542" },
       capBig: { family: '"Noto Sans TC", sans-serif', size: 46, fontWeight: 900, color: "#ffdf3a", glow: "#c0201a" },
       cellValue: { family: '"Oswald", sans-serif', size: 30, fontWeight: 700, color: "#ffffff" },
@@ -47573,8 +47612,15 @@ ${e2}`);
     "btn.wish1",
     "btn.wish5",
     "toggle.x3",
+    "toggle.x3.on",
+    "toggle.x3.off",
     "toggle.skip",
+    "toggle.skip.on",
+    "toggle.skip.off",
     "cell.value",
+    "cell.value.0",
+    "cell.value.1",
+    "cell.value.2",
     "cell.zero",
     "cell.corner.TE",
     "cell.corner.YI",
@@ -47583,7 +47629,9 @@ ${e2}`);
     "pool.panel",
     "popup.win",
     "overlay.jackpot.frame",
-    "ui.menu"
+    "ui.menu",
+    "hud.balance",
+    "hud.marquee"
   ];
   var Skin = class _Skin {
     designW = 720;
@@ -47591,6 +47639,7 @@ ${e2}`);
     elements = {};
     tokens;
     textures = /* @__PURE__ */ new Map();
+    bakedText = /* @__PURE__ */ new Set();
     static async load() {
       const s2 = new _Skin();
       const layout = await fetchJson("skin/layout.json") ?? layout_default;
@@ -47598,9 +47647,15 @@ ${e2}`);
       s2.designW = layout.designW ?? 720;
       s2.designH = layout.designH ?? 1280;
       s2.elements = layout.elements ?? {};
+      const baked = layout.bakedText;
+      if (Array.isArray(baked)) s2.bakedText = new Set(baked);
       s2.tokens = tokens;
       await s2.preloadPngs();
       return s2;
+    }
+    /** 該元件的文字已烤進圖檔（layout.json 的 bakedText 陣列）→ 程式不再疊字 */
+    isTextBaked(id) {
+      return this.bakedText.has(id);
     }
     async preloadPngs() {
       await Promise.all(PNG_IDS.map(async (id) => {
@@ -47692,8 +47747,10 @@ ${e2}`);
   var isLaunchMode = !!(launchToken && qChannel && qAccount);
   var playerId = isLaunchMode ? `${qChannel}:${qAccount}` : qs.get("player") ?? "demo_player";
   var apiBase = (qs.get("api") ?? "").replace(/\/$/, "");
-  var client = isMock ? new MockClient() : new HttpClient(playerId, apiBase, launchToken ?? void 0);
+  var client;
   async function boot() {
+    const simFactory = window.__SIM_FACTORY;
+    client = simFactory ? await simFactory() : isMock ? new MockClient() : new HttpClient(playerId, apiBase, launchToken ?? void 0);
     const skin = await Skin.load();
     const W = skin.designW;
     const H2 = skin.designH;
@@ -47726,35 +47783,35 @@ ${e2}`);
     }
     const playerRect = skin.rect("hud.player", { x: 20, y: 44, w: 120, h: 30 });
     const playerText = new Text({
-      text: isMock ? qs.get("player") ?? "1002734" : isLaunchMode ? `${qAccount}@${qChannel}` : `ID:${playerId}`,
-      style: textStyle(bgTex ? skin.font("playerId", { size: 27 }) : skin.font("marquee", { size: 22 }))
+      text: client.mode === "sim" ? "\u5167\u6E2C\u7248" : isMock ? "MOCK" : isLaunchMode ? `${qAccount}@${qChannel}` : `ID:${playerId}`,
+      style: textStyle(skin.font("marquee", { size: 22 }))
     });
-    if (bgTex) {
-      playerText.anchor.set(0.5);
-      playerText.position.set(playerRect.x + (playerRect.w ?? 0) / 2, playerRect.y + (playerRect.h ?? 0) / 2);
-    } else {
-      playerText.position.set(playerRect.x, playerRect.y);
-    }
+    playerText.position.set(playerRect.x, playerRect.y);
     root.addChild(playerText);
     const balRect = skin.rect("hud.balance", { x: 150, y: 50, w: 420, h: 66 });
     const balPlaque = new Container();
     balPlaque.position.set(balRect.x, balRect.y);
-    const balanceText = new Text({ text: "\u2014", style: textStyle(bgTex ? skin.font("balanceBar", { size: 29 }) : skin.font("balance", { size: 32, color: "#3a1c05" })) });
-    if (bgTex) {
-      balanceText.anchor.set(1, 0.5);
-      balanceText.position.set(balRect.w - 10, balRect.h / 2);
-      balPlaque.addChild(balanceText);
+    const balTex = skin.texture("hud.balance");
+    if (balTex) {
+      const sp = new Sprite(balTex);
+      sp.width = balRect.w;
+      sp.height = balRect.h;
+      balPlaque.addChild(sp);
     } else {
       balPlaque.addChild(new Graphics().roundRect(0, 0, balRect.w, balRect.h, 14).fill(vGrad(16771496, 12092939)).stroke({ width: 2, color: 8017416 }));
+    }
+    if (!skin.isTextBaked("hud.balance")) {
       const balLab = new Text({ text: "\u9918\u984D", style: textStyle(skin.font("button", { size: 24, color: "#5a2a05" }), { letterSpacing: 4, fill: "#5a2a05" }) });
       balLab.anchor.set(0, 0.5);
       balLab.position.set(18, balRect.h / 2);
       const balCoin = new Graphics().circle(0, 0, 15).fill(vGrad(16774088, 12092939)).stroke({ width: 2, color: 9069584 });
       balCoin.position.set(105, balRect.h / 2);
-      balanceText.anchor.set(0, 0.5);
-      balanceText.position.set(130, balRect.h / 2);
-      balPlaque.addChild(balLab, balCoin, balanceText);
+      balPlaque.addChild(balLab, balCoin);
     }
+    const balanceText = new Text({ text: "\u2014", style: textStyle(skin.font("balance", { size: 32, color: "#3a1c05" })) });
+    balanceText.anchor.set(0, 0.5);
+    balanceText.position.set(130, balRect.h / 2);
+    balPlaque.addChild(balanceText);
     root.addChild(balPlaque);
     const menuRect = skin.rect("ui.menu", { x: 636, y: 48, w: 60, h: 60 });
     const menuBtn = new Container();
@@ -47825,11 +47882,6 @@ ${e2}`);
     });
     prize.position.set(prizeRect.x, prizeRect.y);
     root.addChild(prize);
-    const blessRect = skin.rect("deco.bless", { x: 352, y: 501, w: 228, h: 38 });
-    const bless = new Text({ text: "祝您發大財", style: textStyle(skin.font("bless", { size: 27 }), { letterSpacing: 2 }) });
-    bless.anchor.set(0.5, 0);
-    bless.position.set(blessRect.x + blessRect.w / 2, blessRect.y);
-    root.addChild(bless);
     const capRect = skin.rect("pool.cap", { x: 356, y: 548, w: 224, h: 90 });
     const capBox = new Container();
     const capLab = new Text({ text: "\u7A4D\u6EFF\u4E0A\u9650\u70BA", style: textStyle(skin.font("marquee", { size: 14, color: "#fff2cf" })) });

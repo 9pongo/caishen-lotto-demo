@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>財神樂透 — 內測版</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@500;700;900&family=Oswald:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    html, body { margin: 0; padding: 0; height: 100%; background: #120a06; overflow: hidden; }
+    #game { position: fixed; inset: 0; }
+    #game canvas { display: block; }
+  </style>
+</head>
+<body>
+  <div id="game"></div>
+  <!-- 內測版：sim.js 先載（通行碼解密真權重表 + 本地統計），main.js 只是播放器 -->
+  <script src="js/sim.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
